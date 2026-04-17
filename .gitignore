@@ -1,0 +1,11 @@
+*.pt
+*.jpg
+*.png
+*.jpeg
+datasets/
+__pycache__/
+.ipynb_checkpoints/
+*.egg-info/
+dist/
+build/
+.env

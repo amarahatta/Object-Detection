@@ -1,0 +1,18 @@
+path: /kaggle/input/datasets/aadarshmarahatta/yolo-subset
+train: images/train
+val: images/val
+test: images/test
+
+nc: 8
+
+names:
+  0: car
+  1: person
+  2: truck
+  3: bus
+  4: motor
+  5: bike
+  6: traffic light
+  7: traffic sign
+
+
