@@ -1,37 +1,96 @@
 import os
 import json
+import warnings
 
 import cv2
 import matplotlib.pyplot as plt
 
 from src.utils import CLASS_MAP, CLASS_NAMES, COLORS
 
-def convert_bdd100k_to_yolo(json_path, image_dirs, output_dir):
+def _normalize_bdd100k_name(name):
+    """Strip whitespace; use basename if ``name`` looks like a relative path (merged JSON style)."""
+    if not isinstance(name, str):
+        name = str(name) if name is not None else ""
+    name = name.strip()
+    if not name:
+        return name
+    if "/" in name or "\\" in name:
+        name = os.path.basename(name.replace("\\", "/"))
+    return name
+
+
+def _find_bdd100k_image(img_filename, image_dirs):
+    """Resolve disk path; BDD `name` is often a stem without extension (images are ``stem.jpg``)."""
+    img_filename = _normalize_bdd100k_name(img_filename)
+    if not img_filename:
+        return None
+    for root in image_dirs:
+        candidate = os.path.join(root, img_filename)
+        if os.path.isfile(candidate):
+            return candidate
+    stem, ext = os.path.splitext(img_filename)
+    if ext.lower() not in (".jpg", ".jpeg", ".png"):
+        for ext in (".jpg", ".jpeg", ".png"):
+            for root in image_dirs:
+                candidate = os.path.join(root, stem + ext)
+                if os.path.isfile(candidate):
+                    return candidate
+    return None
+
+
+def _validate_image_roots(image_dirs):
+    roots = [os.path.abspath(os.path.expanduser(d)) for d in image_dirs]
+    missing = [r for r in roots if not os.path.isdir(r)]
+    if missing:
+        raise FileNotFoundError(
+            "BDD100K image folder(s) not found (check DATASET_PATH / TRAIN_IMAGE_DIR / VAL_IMAGE_DIR):\n"
+            + "\n".join(f"  {m}" for m in missing)
+        )
+    for r in roots:
+        found = False
+        with os.scandir(r) as it:
+            for e in it:
+                if e.is_file() and e.name.lower().endswith((".jpg", ".jpeg", ".png")):
+                    found = True
+                    break
+        if not found:
+            warnings.warn(f"No .jpg/.jpeg/.png files found under {r!r}.", stacklevel=2)
+    return roots
+
+
+def _yolo_label_basename(img_filename):
+    """``stem.txt`` for YOLO labels (strip image extension if present)."""
+    stem, ext = os.path.splitext(img_filename)
+    if ext.lower() in (".jpg", ".jpeg", ".png"):
+        return stem + ".txt"
+    return img_filename + ".txt"
+
+
+def convert_bdd100k_to_yolo(json_path, image_dirs, output_dir, *, miss_log_max=10):
     os.makedirs(output_dir, exist_ok=True)
 
-    with open(json_path) as f:
+    with open(json_path, encoding="utf-8") as f:
         annotations = json.load(f)
 
     if isinstance(image_dirs, str):
         image_dirs = [image_dirs]
+    image_dirs = _validate_image_roots(image_dirs)
 
     converted = 0
     skipped_no_img = 0
     skipped_no_labels = 0
+    miss_logged = 0
 
     for item in annotations:
-        img_filename = item["name"]
+        img_filename = _normalize_bdd100k_name(item.get("name", ""))
 
-        img_path = None
-        for root in image_dirs:
-            candidate = os.path.join(root, img_filename)
-            if os.path.exists(candidate):
-                img_path = candidate
-                break
+        img_path = _find_bdd100k_image(img_filename, image_dirs)
 
         if img_path is None:
             skipped_no_img += 1
-            print(f"[MISS] {img_filename}")
+            if miss_log_max is None or miss_logged < miss_log_max:
+                print(f"[MISS] {img_filename}")
+                miss_logged += 1
             continue
 
         img = cv2.imread(img_path)
@@ -64,7 +123,7 @@ def convert_bdd100k_to_yolo(json_path, image_dirs, output_dir):
             skipped_no_labels += 1
             continue
 
-        out_name = img_filename.replace(".jpg", ".txt")
+        out_name = _yolo_label_basename(img_filename)
         out_path = os.path.join(output_dir, out_name)
         with open(out_path, "w") as f:
             f.write("\n".join(lines))
@@ -73,6 +132,11 @@ def convert_bdd100k_to_yolo(json_path, image_dirs, output_dir):
 
     print(f"Converted: {converted}")
     print(f"Skipped (no image file): {skipped_no_img}")
+    if skipped_no_img and miss_log_max is not None and skipped_no_img > miss_logged:
+        print(
+            f"  (only first {miss_logged} [MISS] lines printed; "
+            "pass miss_log_max=None to print every miss)"
+        )
     print(f"Skipped (no selected-class labels): {skipped_no_labels}")
     return converted
 
