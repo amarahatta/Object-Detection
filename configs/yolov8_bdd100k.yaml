@@ -1,4 +1,4 @@
-path: /kaggle/input/datasets/aadarshmarahatta/yolo-subset
+# path: /kaggle/input/datasets/aadarshmarahatta/yolo-subset
 train: images/train
 val: images/val
 test: images/test
