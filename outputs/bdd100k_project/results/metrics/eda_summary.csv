@@ -1,0 +1,2 @@
+total_images,total_selected_instances,mean_bbox_width,mean_bbox_height,mean_bbox_area,mean_objects_per_image,small_objects_pct,medium_objects_pct,large_objects_pct,count_car,count_person,count_truck,count_bus,count_motor,count_bike,count_traffic_light,count_traffic_sign
+80000,1468661,56.578673451530335,49.766280930126825,6768.810942550719,18.3582625,55.26659998461183,32.106796599079026,12.62660341630914,816661,104700,34259,13285,3454,8234,213192,274876
