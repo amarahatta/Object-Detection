@@ -12,3 +12,4 @@ build/
 /venv
 /dataset
 /.venv
+/outputs/bdd100k_preprocessing
