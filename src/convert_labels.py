@@ -77,6 +77,36 @@ def convert_bdd100k_to_yolo(json_path, image_dirs, output_dir):
     return converted
 
 
+def draw_bdd100k_labels(image_path, labels):
+    """Draw legacy-format ``labels`` (``category`` + ``box2d``) on an image; only ``CLASS_MAP`` classes."""
+    img = cv2.imread(image_path)
+    if img is None:
+        return None
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    for obj in labels:
+        category = obj.get("category")
+        if category not in CLASS_MAP:
+            continue
+        if "box2d" not in obj:
+            continue
+        box = obj["box2d"]
+        x1, y1 = int(box["x1"]), int(box["y1"])
+        x2, y2 = int(box["x2"]), int(box["y2"])
+        cls = CLASS_MAP[category]
+        color = COLORS[cls % len(COLORS)]
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+        cv2.putText(
+            img,
+            CLASS_NAMES[cls],
+            (x1, max(y1 - 5, 0)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            color,
+            1,
+        )
+    return img
+
+
 def draw_yolo_labels(image_path, label_path):
     img = cv2.imread(image_path)
     if img is None:
