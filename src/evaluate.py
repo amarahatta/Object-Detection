@@ -38,11 +38,15 @@ def predict_fasterrcnn(model, image_tensor, device, score_thresh=0.5):
 
 
 def compute_map(predictions, targets):
-    metric = MeanAveragePrecision(iou_type="bbox")
+    metric = MeanAveragePrecision(
+        box_format="xyxy",
+        iou_type="bbox",
+        class_metrics=True,
+        extended_summary=True,
+        backend="faster_coco_eval"
+    )
     metric.update(predictions, targets)
-    result = metric.compute()
-    return result
-
+    return metric.compute()
 
 def compute_iou(box1, box2):
     x1 = max(box1[0], box2[0])
@@ -266,3 +270,30 @@ def plot_per_class_ap(yolo_aps, frcnn_aps, class_names, save_path):
     plt.savefig(save_path, dpi=150)
     plt.close()
     print(f"Per-class AP chart saved to {save_path}")
+
+def filter_predictions_by_score(predictions, threshold):
+    filtered = []
+    for pred in predictions:
+        keep = pred["scores"] >= threshold
+        filtered.append({
+            "boxes": pred["boxes"][keep],
+            "scores": pred["scores"][keep],
+            "labels": pred["labels"][keep],
+        })
+    return filtered
+
+
+def build_pr_curve_data(predictions, targets, thresholds=None):
+    if thresholds is None:
+        thresholds = np.linspace(0.0, 0.95, 20)
+
+    precisions = []
+    recalls = []
+
+    for thr in thresholds:
+        filtered_preds = filter_predictions_by_score(predictions, thr)
+        precision, recall, _ = compute_precision_recall_f1(filtered_preds, targets)
+        precisions.append(precision)
+        recalls.append(recall)
+
+    return np.array(precisions), np.array(recalls)
