@@ -15,3 +15,5 @@ build/
 /outputs/bdd100k_preprocessing
 *.zip
 *.pth
+*.html
+*.pdf
