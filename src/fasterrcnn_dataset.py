@@ -26,9 +26,16 @@ class BDD100KDataset(Dataset):
 
     def __getitem__(self, idx):
         item = self.annotations[idx]
-        img_path = os.path.join(self.image_dir, item["name"])
+        image_name = item["name"]
+        if not os.path.splitext(image_name)[1]:
+            image_name = f"{image_name}.jpg"
+
+        img_path = os.path.join(self.image_dir, image_name)
 
         img = cv2.imread(img_path)
+        if img is None:
+            raise FileNotFoundError(f"Could not read image: {img_path}")
+
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img_h, img_w = img.shape[:2]
 
