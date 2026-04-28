@@ -6,7 +6,13 @@ import torch
 import cv2
 import seaborn as sns
 import matplotlib.pyplot as plt
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+try:
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
+    _TORCHMETRICS_IMPORT_ERROR = None
+except Exception as exc:  # pragma: no cover - environment-dependent import
+    MeanAveragePrecision = None
+    _TORCHMETRICS_IMPORT_ERROR = exc
 
 
 def predict_yolov8(model, image_path, conf=0.25, iou=0.45):
@@ -38,6 +44,15 @@ def predict_fasterrcnn(model, image_tensor, device, score_thresh=0.5):
 
 
 def compute_map(predictions, targets):
+    if MeanAveragePrecision is None:
+        raise ImportError(
+            "compute_map requires torchmetrics and compatible dependencies. "
+            "Your environment failed to import torchmetrics. "
+            "Fix by installing a transformers-compatible huggingface-hub version, e.g. "
+            "`pip install \"huggingface-hub>=0.30.0,<1.0\"`. "
+            f"Original error: {_TORCHMETRICS_IMPORT_ERROR}"
+        ) from _TORCHMETRICS_IMPORT_ERROR
+
     metric = MeanAveragePrecision(
         box_format="xyxy",
         iou_type="bbox",
