@@ -1,7 +1,7 @@
 task: detect
 mode: train
 model: yolov8n.pt
-data: C:\Users\micha\Downloads\Object-Detection-main\Object-Detection-main\configs\yolov8_bdd100k.yaml
+data: C:\Users\micha\Downloads\Object-Detection-main\configs\yolov8_bdd100k.yaml
 epochs: 5
 time: null
 patience: 100
@@ -12,7 +12,7 @@ save_period: -1
 cache: false
 device: '0'
 workers: 8
-project: C:\Users\micha\Downloads\Object-Detection-main\Object-Detection-main\outputs\bdd100k_project\runs
+project: C:\Users\micha\Downloads\Object-Detection-main\outputs\bdd100k_project\runs
 name: yolov8n_bdd100k_sanity
 exist_ok: false
 pretrained: true
@@ -80,6 +80,7 @@ warmup_momentum: 0.8
 warmup_bias_lr: 0.1
 box: 7.5
 cls: 0.5
+cls_pw: 0.0
 dfl: 1.5
 pose: 12.0
 kobj: 1.0
@@ -106,4 +107,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: C:\Users\micha\Downloads\Object-Detection-main\Object-Detection-main\outputs\bdd100k_project\runs\yolov8n_bdd100k_sanity
+save_dir: C:\Users\micha\Downloads\Object-Detection-main\outputs\bdd100k_project\runs\yolov8n_bdd100k_sanity

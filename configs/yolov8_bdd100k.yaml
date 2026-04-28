@@ -1,4 +1,4 @@
-path: C:/Users/micha/Downloads/Object-Detection-main/Object-Detection-main/outputs/bdd100k_preprocessing/bdd100k-yolo-subset-v1
+path: C:/Users/micha/Downloads/Object-Detection-main/outputs/bdd100k_preprocessing/bdd100k-yolo-subset-v1
 train: images/train
 val: images/val
 test: images/test
@@ -14,5 +14,3 @@ names:
   5: bike
   6: traffic light
   7: traffic sign
-
-
