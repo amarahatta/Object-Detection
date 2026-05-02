@@ -1,10 +1,9 @@
 # Object Detection for Autonomous Vehicles
 
-RoadAware is a computer vision project for road-scene object detection using dashcam images from the BDD100K dataset. The project trains and evaluates YOLOv8 and Faster R-CNN models to detect common traffic objects such as cars, people, trucks, buses, motorcycles, bikes, traffic lights, and traffic signs.
-
-**Demo:** https://huggingface.co/spaces/AadMa/bdd-object-detection
-
-**Video:** https://youtu.be/CNPKmXZdYqc
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.3.0-red.svg)](https://pytorch.org)
+[![Ultralytics](https://img.shields.io/badge/Ultralytics-8.2.0-purple.svg)](https://ultralytics.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Overview
  
@@ -18,6 +17,8 @@ The goal is to quantitatively compare these methods across accuracy, speed, and 
 - Targeted improvements addressing class imbalance and small object detection (resolution scaling, copy-paste augmentation, repeat factor sampling)
 - Side-by-side qualitative analysis including failure case documentation
 
+> **Demo:** https://huggingface.co/spaces/amarahatta/bdd-object-detection
+> **Video:** https://youtu.be/CNPKmXZdYqc
 
 ## Features
 
