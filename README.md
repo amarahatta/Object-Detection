@@ -1,4 +1,4 @@
-# RoadAware
+# Object Detection for Autonomous Vehicles
 
 RoadAware is a computer vision project for road-scene object detection using dashcam images from the BDD100K dataset. The project trains and evaluates YOLOv8 and Faster R-CNN models to detect common traffic objects such as cars, people, trucks, buses, motorcycles, bikes, traffic lights, and traffic signs.
 
@@ -7,8 +7,17 @@ RoadAware is a computer vision project for road-scene object detection using das
 **Video:** https://youtu.be/CNPKmXZdYqc
 
 ## Overview
+ 
+This project benchmarks three object detection approaches — a modern one-stage detector (YOLOv8), a classical two-stage detector (Faster R-CNN) on the BDD100K autonomous driving dataset.
+ 
+The goal is to quantitatively compare these methods across accuracy, speed, and model complexity, and to demonstrate why deep learning methods have become the standard for real-world autonomous vehicle perception systems.
+ 
+**Key contributions:**
+- Reproducible training and evaluation pipeline for all models on a stratified BDD100K subset
+- Unified evaluation framework with mAP@0.5, mAP@0.5:0.95, per-class AP, FPS, and model size
+- Targeted improvements addressing class imbalance and small object detection (resolution scaling, copy-paste augmentation, repeat factor sampling)
+- Side-by-side qualitative analysis including failure case documentation
 
-The goal of this project is to compare modern object detection approaches for autonomous-driving-style perception tasks. The pipeline includes dataset exploration, preprocessing, class filtering, model training, class-imbalance handling, and evaluation using object detection metrics.
 
 ## Features
 
@@ -18,30 +27,6 @@ The goal of this project is to compare modern object detection approaches for au
 - Tested different training strategies including augmentation, higher input resolution, and repeat-factor sampling
 - Evaluated models using mAP, precision, recall, F1 score, per-class AP, confusion matrices, FPS, and latency
 - Built reusable helper modules for dataset loading, preprocessing, label conversion, sampling, and evaluation
-
-## Classes
-
-The model detects 8 traffic-related classes:
-
-| ID | Class |
-|---:|---|
-| 0 | car |
-| 1 | person |
-| 2 | truck |
-| 3 | bus |
-| 4 | motor |
-| 5 | bike |
-| 6 | traffic light |
-| 7 | traffic sign |
-
-## Tech Stack
-
-- **Languages:** Python
-- **ML / Deep Learning:** PyTorch, TorchVision, Ultralytics YOLOv8
-- **Computer Vision:** OpenCV
-- **Data / Analysis:** NumPy, pandas, Matplotlib
-- **Evaluation:** TorchMetrics, confusion matrices, per-class AP, FPS/latency benchmarking
-- **Environment:** Jupyter Notebooks
 
 ## Project Structure
 
@@ -75,13 +60,28 @@ RoadAware/
     ├── repeat_factor_sampler.py
     └── utils.py
 ```
+## Classes
 
-## Dataset
+The model detects 8 traffic-related classes:
 
-This project uses the BDD100K object detection dataset. The full dataset is not included in this repository because of its size.
+| ID | Class |
+|---:|---|
+| 0 | car |
+| 1 | person |
+| 2 | truck |
+| 3 | bus |
+| 4 | motor |
+| 5 | bike |
+| 6 | traffic light |
+| 7 | traffic sign |
+
+> **Note on class indexing:** Faster R-CNN reserves class 0 for background — all class IDs are shifted by +1 relative to YOLOv8. This is handled automatically in `src/fasterrcnn_dataset.py`.
+
+## Dataset 
+**Source:** [100k Labeled Road Images by SoleSensei](https://www.kaggle.com/datasets/solesensei/solesensei_bdd100k) (Kaggle)  
+**Original dataset:** [Berkeley DeepDrive BDD100K](https://bdd-data.berkeley.edu/)
 
 Expected dataset inputs:
-
 ```text
 bdd100k/
 ├── images/
@@ -92,14 +92,19 @@ bdd100k/
     └── det_20/det_val.json
 ```
 
-The preprocessing notebook filters images to the selected traffic classes and creates a smaller working subset:
-
-```text
-Train: 7000 images
-Validation: 1500 images
-Test: 1500 images
-Total: 10000 images
-```
+### Subset Used
+ 
+The full BDD100K dataset contains 100k images. We use a stratified subset that preserves diversity across conditions:
+ 
+| Split | Size | Stratification |
+|---|---|---|
+| Train | ~7,000 images | Weather × time-of-day |
+| Val | ~1,500 images | Weather × time-of-day |
+| Test | ~1,500 images | Held out — not used during training or tuning |
+ 
+Stratification variables: weather (clear, rainy, foggy, snowy) × time of day (daytime, night, dawn/dusk).
+ 
+**Processed dataset** (YOLO format, labels converted, blurry images removed):  
 
 ## Model Experiments
 
@@ -200,35 +205,3 @@ jupyter notebook notebooks/05_evaluation.ipynb
 - Update the dataset paths inside `configs/yolov8_bdd100k.yaml` before training YOLOv8.
 - Trained model weights and the BDD100K dataset should not be committed to GitHub because of file size limits.
 - Use `.gitignore` to exclude large files such as datasets, model checkpoints, `.pt` files, cache files, and notebook checkpoints.
-
-## Suggested `.gitignore`
-
-```gitignore
-# Python
-__pycache__/
-*.pyc
-.venv/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Data and outputs
-data/
-datasets/
-outputs/
-runs/
-
-# Model weights
-*.pt
-*.pth
-*.onnx
-
-# OS files
-.DS_Store
-```
-
-## Author
-
-**Michael Khuri**  
-Portfolio: https://michaelkhuri.com  
-GitHub: https://github.com/Savant-sys
